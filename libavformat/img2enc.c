@@ -44,6 +44,7 @@ typedef struct VideoMuxData {
     int use_strftime;
     const char *muxer;
     int use_rename;
+    int max_file_count;
 } VideoMuxData;
 
 static int write_header(AVFormatContext *s)
@@ -98,7 +99,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
                 return AVERROR(EINVAL);
             }
         } else if (av_get_frame_filename2(filename, sizeof(filename), img->path,
-                                          img->img_number,
+                                          img->max_file_count > 1 ? (img->img_number % img->max_file_count) : img->img_number,
                                           AV_FRAME_FILENAME_FLAGS_MULTIPLE) < 0 &&
                    img->img_number > 1) {
             av_log(s, AV_LOG_ERROR,
@@ -207,6 +208,7 @@ static const AVOption muxoptions[] = {
     { "start_number", "set first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT,  { .i64 = 1 }, 0, INT_MAX, ENC },
     { "strftime",     "use strftime for filename", OFFSET(use_strftime),  AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, ENC },
     { "atomic_writing", "write files atomically (using temporary files and renames)", OFFSET(use_rename), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, ENC },
+    { "max_file_count", "set max file count", OFFSET(max_file_count), AV_OPT_TYPE_INT,  { .i64 = 0 }, 0, INT_MAX, ENC },
     { NULL },
 };
 
